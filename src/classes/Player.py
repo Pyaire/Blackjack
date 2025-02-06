@@ -32,6 +32,9 @@ class Player:
 
     def get_wallet(self):
         return self.wallet
+    
+    def set_wallet(self, wallet):
+        self.wallet = wallet
 
     def get_name(self):
         return self.name

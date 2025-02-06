@@ -36,7 +36,7 @@ print(nb_documents)
 
 
 #%% Find a document
-query = {"name": "pyaire"}
+query = {"name": "aynost"}
 result = collection.find_one(query)
 print(result)
 
@@ -70,7 +70,7 @@ collection.update_one(query, new_values)
 
 
 # %% Delete a document
-query = {"name": "Justin"}
+query = {"name": "pyaire"}
 collection.delete_one(query)
 
 
@@ -91,8 +91,13 @@ from src.classes.Player import Player
 
 player = Player("Justin", 20000, 0, 0, 0)
 
+
+
+
+
+
 # %% Use DAO
-from src.DAO import DAO
+from classes.DAO import DAO
 from src.classes.Player import Player
 
 pyaire = Player("pyaire", 50, 0, 0, 0)

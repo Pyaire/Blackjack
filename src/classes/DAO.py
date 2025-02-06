@@ -1,14 +1,14 @@
 import os
 import pymongo
-import src.Player as Player
+from src.classes.Player import Player
 
 
 class DAO:
 
     def __init__(self):
         CONNECTION_STRING=os.getenv('BDD_STRING')
-        client = pymongo.MongoClient(CONNECTION_STRING)
-        db = client['profils']
+        self.client = pymongo.MongoClient(CONNECTION_STRING)
+        db = self.client['profils']
         collection = db['profils_collec']
         self.db = collection
 
@@ -20,7 +20,8 @@ class DAO:
         query = {"name": name}
         result = self.db.find_one(query)
         if result is not None:
-            return Player(result["name"], result["wallet"], result["games_played"], result["games_won"], result["nb_bankrupt"])
+            joueur = Player.from_dict(result)
+            return joueur
         return None
     
     def insert(self, player):
@@ -31,13 +32,17 @@ class DAO:
 
     def update(self, player):
         obj = player.to_dict()
-        query = {"name": player.get_name()}
-        new_values = {"$set": obj}
-        return self.db.update(new_values, query)
+        query = {"name": obj["name"]}
+        new_values = {"$set": {"wallet": obj["wallet"]}}
+        self.db.update_one(query, new_values)
 
     def delete(self, player):
         query = {"name": player.get_name()}
         self.db.delete_one(query)
+
+    def close(self):
+        self.client.close()
+        print("Connection closed")
 
     def get_nb_documents(self):
         return self.db.count_documents({})
