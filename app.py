@@ -75,7 +75,7 @@ async def on_message(message):
         if profil_player is None:
             await message.channel.send(f"{player} don't have a profile yet")
         else:
-            profil_player.set_wallet(message.content.split(" ")[2])
+            profil_player.set_wallet(int(message.content.split(" ")[2]))
             BDD.update(profil_player)
             await message.channel.send("Refound done !")
 
