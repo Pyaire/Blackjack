@@ -21,7 +21,7 @@ class Table:
             The discord client that is going to be used to interact with the player
         """
         self.players = {
-            "dealer": [],
+            "dealer": {"hand": []},
             player.get_name(): {"bet": 0, "hand": [], "insurance": False, "hand_stat": Hand_stat.IN},
         }
         self.deck = Deck()
@@ -59,75 +59,71 @@ class Table:
         player : Player
             The player that is standing
         """
-        player = player.get_name()
-        self.players[player]["hand_stat"] = Hand_stat.STAND
+        player_name = player.get_name()
+        self.players[player_name]["hand_stat"] = Hand_stat.STAND
 
-    def hit(self, player : Player):
+    def hit(self, player_name : str):
         """
         hit is a method that makes a player draw a card
 
         Parameters
         ----------
-        player : Player
+        player_name : str
             The player that is drawing a card
         """
-        name = player.get_name()
-        self.players[name]["hand"].append(self.deck.draw_card())
-        self.players[name]["hand_stat"] = self.check_hand(player)
+        self.players[player_name]["hand"].append(self.deck.draw_card())
+        self.players[player_name]["hand_stat"] = self.check_hand(player_name)
 
-    def double(self, player : Player):
+    def double(self, player_name : str):
         """
         double is a method that makes a player double his bet and draw a card
 
         Parameters
         ----------
-        player : Player
+        player_name : str
             The player that is doubling his bet and drawing a card
         """
-        player = player.get_name()
-        self.players[player]["bet"] *= 2
-        self.players[player]["hand"].append(self.deck.draw_card())
-        self.players[player]["hand_stat"] = self.check_hand(player)
+        self.players[player_name]["bet"] *= 2
+        self.players[player_name]["hand"].append(self.deck.draw_card())
+        self.players[player_name]["hand_stat"] = self.check_hand(player_name)
 
-    def split(self, player : Player):
+    def split(self, player_name : str):
         """
         split is a method that makes a player split his hand
 
         Parameters
         ----------
-        player : Player
+        player_name : str
             The player that is splitting his hand
         """
-        player = player.get_name()
-        self.players[player + "-split"] = {
-            "bet": self.players[player]["bet"],
-            "hand": [self.players[player]["hand"].pop()],
+        self.players[player_name + "-split"] = {
+            "bet": self.players[player_name]["bet"],
+            "hand": [self.players[player_name]["hand"].pop()],
             "insurance": False,
             "hand_stat": Hand_stat.IN,
-            "to": player,
+            "to": player_name,
         }
-        self.players[player]["hand"].append(self.deck.draw_card())
-        self.players[player + "-split"]["hand"].append(self.deck.draw_card())
+        self.players[player_name]["hand"].append(self.deck.draw_card())
+        self.players[player_name + "-split"]["hand"].append(self.deck.draw_card())
 
-    def insurance(self, player : Player):
+    def insurance(self, player_name : str):
         """
         insurance is a method that makes a player take insurance
 
         Parameters
         ----------
-        player : Player
+        player_name : Player
             The player that is taking insurance
         """
-        player = player.get_name()
-        self.players[player]["insurance"] = True
+        self.players[player_name]["insurance"] = True
 
-    def check_hand(self, player: Player) -> Hand_stat:
+    def check_hand(self, player_name: str) -> Hand_stat:
         """
         check_hand is a method that checks the value of a player's hand
 
         Parameters
         ----------
-        player : Player
+        player_name : str
             The player whose hand is to be checked
 
         Returns
@@ -135,9 +131,8 @@ class Table:
         Hand_stat
             The state of the hand (IN, BUST, BLACKJACK)
         """
-        player = player.get_name()
         hand_value = 0
-        hand = self.players[player]["hand"]
+        hand = self.players[player_name]["hand"]
         for card in hand:
             hand_value += card.value
         if hand_value > 21:
@@ -146,13 +141,13 @@ class Table:
             return Hand_stat.BLACKJACK
         return Hand_stat.IN
 
-    def check_blackjack(self, player : Player) -> bool:
+    def check_blackjack(self, player_name : str) -> bool:
         """
         check_blackjack is a method that checks if a player has a blackjack
 
         Parameters
         ----------
-        player : Player
+        player_name : str
             The player whose hand is to be checked
 
         Returns
@@ -160,28 +155,26 @@ class Table:
         bool
             True if the player has a blackjack, False otherwise
         """
-        player = player.get_name()
         hand_value = 0
-        hand = self.players[player]["hand"]
+        hand = self.players[player_name]["hand"]
         for card in hand:
             hand_value += card.value
         if hand_value == 21:
             return True
         return False
 
-    def bet(self, player : Player, amount : int):
+    def bet(self, player_name : str, amount : int):
         """
         bet is a method that makes a player bet an a select amount of money
 
         Parameters
         ----------
-        player : Player
+        player_name : str
             The player that is betting
         amount : int
             The amount of money the player decided to bet
         """
-        player = player.get_name()
-        self.players[player]["bet"] = amount
+        self.players[player_name]["bet"] = amount
 
     def get_player(self, player : Player) -> dict:
         """
@@ -197,26 +190,26 @@ class Table:
         dict
             The player from the table
         """
-        player = player.get_name()
+        player_name = player.get_name()
         try:
-            to_return = self.players[player]
+            to_return = self.players[player_name]
         except:
             return None
 
     # def start_game(self):
     #     for player in self.players:
     #         if player != 'dealer':
-    #             self.players[player]['hand'] = self.deck.draw_card()
+    #             self.players[player_name]['hand'] = self.deck.draw_card()
     #     self.players['dealer'] = self.deck.draw_card()
     #     for player in self.players:
     #         if player != 'dealer':
-    #             self.players[player]['hand'] = self.deck.draw_card()
+    #             self.players[player_name]['hand'] = self.deck.draw_card()
     #     for player in self.players:
     #         if self.check_blackjack(player):
-    #             self.players[player]['hand_stat'] = Hand_stat.BLACKJACK
-    #         while self.players[player]['hand_stat'] == Hand_stat.IN:
+    #             self.players[player_name]['hand_stat'] = Hand_stat.BLACKJACK
+    #         while self.players[player_name]['hand_stat'] == Hand_stat.IN:
     #             ascii_hand = ''
-    #             for card in self.players[player]['hand']:
+    #             for card in self.players[player_name]['hand']:
     #                 ascii_hand += card.to_ascii()
     #             self.client.channel.send(f"""{player} hand: {ascii_hand}
     #             Dealer hand: {self.players['dealer'][0].to_ascii()}
@@ -241,11 +234,11 @@ class Table:
     # def start_game():
     #     for player in self.players:
     #         if player != 'dealer':
-    #             self.players[player]['hand'] = self.deck.draw_card()
+    #             self.players[player_name]['hand'] = self.deck.draw_card()
     #     self.players['dealer'] = self.deck.draw_card()
     #     for player in self.players:
     #         if player != 'dealer':
-    #             self.players[player]['hand'] = self.deck.draw_card()
+    #             self.players[player_name]['hand'] = self.deck.draw_card()
     #     for player in self.players:
             # await message.channel.send(f"<@{player.id}> you're up !")
 
