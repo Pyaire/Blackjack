@@ -23,15 +23,18 @@ class Card:
         """
         to_ascii is a method that returns the ASCII representation of the card.
         """
+        to_return = f"{self.name} "
+        if self.name == "10":
+            to_return = "10"
         return f"""
         ┌─────────┐
-        │ {self.name}       │
+        │ {to_return}      │
         │         │
         │         │
         │    {self.suit}    │
         │         │
         │         │
-        │       {self.name} │
+        │      {to_return} │
         └─────────┘
         """
     

@@ -21,7 +21,7 @@ class Table:
             The discord client that is going to be used to interact with the player
         """
         self.players = {
-            "dealer": {"hand": []},
+            "dealer": {"hand": [], "hand_stat": Hand_stat.IN},
             player.get_name(): {"bet": 0, "hand": [], "insurance": False, "hand_stat": Hand_stat.IN},
         }
         self.deck = Deck()
@@ -50,16 +50,15 @@ class Table:
         """
         del self.players[str(player.get_name())]
 
-    def stand(self, player: Player):
+    def stand(self, player_name: str):
         """
         stand is a method that makes a player stand
 
         Parameters
         ----------
-        player : Player
+        player_name : str
             The player that is standing
         """
-        player_name = player.get_name()
         self.players[player_name]["hand_stat"] = Hand_stat.STAND
 
     def hit(self, player_name : str):
@@ -117,9 +116,29 @@ class Table:
         """
         self.players[player_name]["insurance"] = True
 
-    def check_hand(self, player_name: str) -> Hand_stat:
+    def check_hand_value(self, player_name: str) -> Hand_stat:
         """
         check_hand is a method that checks the value of a player's hand
+
+        Parameters
+        ----------
+        player_name : str
+            The player whose hand is to be checked
+
+        Returns
+        -------
+        Hand_value
+            The value of the hand (From 0 to n)
+        """
+        hand_value = 0
+        hand = self.players[player_name]["hand"]
+        for card in hand:
+            hand_value += card.value
+        return hand_value
+
+    def check_hand(self, player_name: str) -> Hand_stat:
+        """
+        check_hand is a method that checks the state of a player's hand
 
         Parameters
         ----------
@@ -137,8 +156,10 @@ class Table:
             hand_value += card.value
         if hand_value > 21:
             return Hand_stat.BUST
-        if hand_value == 21:
+        if hand_value == 21 and len(self.players[player_name]["hand"]) == 2:
             return Hand_stat.BLACKJACK
+        if hand_value == 21:
+            return Hand_stat.STAND
         return Hand_stat.IN
 
     def check_blackjack(self, player_name : str) -> bool:
