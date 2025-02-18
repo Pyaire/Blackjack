@@ -71,9 +71,9 @@ class Table:
         player : Player
             The player that is drawing a card
         """
-        player = player.get_name()
-        self.players[player]["hand"].append(self.deck.draw_card())
-        self.players[player]["hand_stat"] = self.check_hand(player)
+        name = player.get_name()
+        self.players[name]["hand"].append(self.deck.draw_card())
+        self.players[name]["hand_stat"] = self.check_hand(player)
 
     def double(self, player : Player):
         """
@@ -237,3 +237,16 @@ class Table:
     #                 self.split(player)
     #             elif response == '🛡️':
     #                 self.insurance(player)
+
+    # def start_game():
+    #     for player in self.players:
+    #         if player != 'dealer':
+    #             self.players[player]['hand'] = self.deck.draw_card()
+    #     self.players['dealer'] = self.deck.draw_card()
+    #     for player in self.players:
+    #         if player != 'dealer':
+    #             self.players[player]['hand'] = self.deck.draw_card()
+    #     for player in self.players:
+            # await message.channel.send(f"<@{player.id}> you're up !")
+
+
