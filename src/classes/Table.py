@@ -217,6 +217,76 @@ class Table:
         except:
             return None
 
+    def get_player_hand(self, player_name : str) -> str:
+        """
+        get_player_hand is a method that returns player's hand as a string
+
+        Parameters
+        ----------
+        player_name : str
+            The player whose hand is to be returned
+
+        Returns
+        -------
+        str
+            List of cards (value & color)
+        """
+        player_hand = ""
+        hand = self.players[player_name]["hand"]
+        for card in hand:
+            player_hand += card.to_print() + " "
+        return player_hand
+    
+    def play(self, player_name : str) :
+        """
+        play is a method that handles player's turn
+
+        Parameters
+        ----------
+        player_name : str
+            The player whose turn it is to play
+        """
+        while(self.players[player_name]["hand_stat"] == Hand_stat.IN) :
+            print(f"{player_name} : You have {self.get_player_hand(player_name)}")
+            player_answer = input("Do you want to hit [H], stand [S] or double[D] ?\n")
+# TO-DO : handle insurance, handle split
+            match player_answer :
+                case "H" :
+                    self.hit(player_name)
+                case "S" :
+                    self.stand(player_name)
+                case "D" :
+                    self.double(player_name)
+                case _ :
+                    print("Option not recognised")
+        print(f"{player_name} state : {self.players[player_name]["hand_stat"]}, result {self.check_hand_value(player_name)}\n")
+
+    def check_win(self, player : Player) -> str:
+        """
+        check_win is a method that check player result and update wallet
+
+        Parameters
+        ----------
+        player : Player
+            The player whose hand is to be checked
+
+        Returns
+        -------
+        str
+            Result (Win / Loss / Draw / Blackjack)
+        """
+        if (self.players[player.get_name()]["hand_stat"] == Hand_stat.BLACKJACK and self.players["dealer"]["hand_stat"] != Hand_stat.BLACKJACK) :
+            player.set_wallet(player.get_wallet() + 2.5 * self.players[player.get_name()]["bet"])
+            return("Blackjack !")
+        elif (self.players[player.get_name()]["hand_stat"] == Hand_stat.STAND and (self.check_hand_value("dealer") < self.check_hand_value(player.get_name()) or self.players["dealer"]["hand_stat"] == Hand_stat.BUST)) :
+            player.set_wallet(player.get_wallet() + 2 * self.players[player.get_name()]["bet"])
+            return("Win !")
+        elif ((self.players[player.get_name()]["hand_stat"] == Hand_stat.BUST or self.check_hand_value("dealer") > self.check_hand_value(player.get_name())) and self.players["dealer"]["hand_stat"] != Hand_stat.BUST) :
+            player.set_wallet(player.get_wallet() - self.players[player.get_name()]["bet"])
+            return("Loss...")
+        else :
+            return("Push")
+            
     # def start_game(self):
     #     for player in self.players:
     #         if player != 'dealer':
