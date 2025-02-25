@@ -85,6 +85,8 @@ class Table:
         self.players[player_name]["bet"] *= 2
         self.players[player_name]["hand"].append(self.deck.draw_card())
         self.players[player_name]["hand_stat"] = self.check_hand(player_name)
+        if(self.players[player_name]["hand_stat"] == Hand_stat.IN):
+             self.players[player_name]["hand_stat"] = Hand_stat.STAND
 
     def split(self, player_name : str):
         """
@@ -237,7 +239,7 @@ class Table:
             player_hand += card.to_print() + " "
         return player_hand
     
-    def play(self, player_name : str) :
+    async def play(self, player_name : str, channel : discord.Message.channel) :
         """
         play is a method that handles player's turn
 
@@ -245,12 +247,12 @@ class Table:
         ----------
         player_name : str
             The player whose turn it is to play
+        channel : discord.Message.channel
+            The channel to post messages on
         """
-        while(self.players[player_name]["hand_stat"] == Hand_stat.IN) :
-            print(f"{player_name} : You have {self.get_player_hand(player_name)}")
-            player_answer = input("Do you want to hit [H], stand [S] or double[D] ?\n")
-# TO-DO : handle insurance, handle split
-            match player_answer :
+        # TO-DO : handle insurance, handle split
+        def check_decision(message):
+            match message.content.capitalize():
                 case "H" :
                     self.hit(player_name)
                 case "S" :
@@ -258,8 +260,14 @@ class Table:
                 case "D" :
                     self.double(player_name)
                 case _ :
-                    print("Option not recognised")
-        print(f"{player_name} state : {self.players[player_name]["hand_stat"]}, result {self.check_hand_value(player_name)}\n")
+                    return False
+            return True
+        while(self.players[player_name]["hand_stat"] == Hand_stat.IN):
+            await channel.send(f"{player_name} : You have {self.get_player_hand(player_name)}")
+            await channel.send("Do you want to hit [H], stand [S] or double[D] ?")
+            await self.client.wait_for('message', check=check_decision)
+            await channel.send(f"{player_name} state : {self.players[player_name]["hand_stat"]}, result {self.check_hand_value(player_name)}\n")
+            print(f"{player_name} state : {self.players[player_name]["hand_stat"]}, result {self.check_hand_value(player_name)}\n")
 
     def check_win(self, player : Player) -> str:
         """
