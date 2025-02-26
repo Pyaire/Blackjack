@@ -11,15 +11,13 @@ load_dotenv()
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
-game = False
 class MyClient(Client):
     async def on_ready(self):
         print(f"Logged on as {self.user}!")
 
     async def on_message(self, message):
         if message.author == client.user : return
-        if message.content.startswith("$stop"):
-            game = False
+
         if message.content.startswith("$start game"):
             game = True
             player1 = Player("player1", 0, 0, 0, 0)
@@ -34,9 +32,9 @@ class MyClient(Client):
             print(f"Added {player2.get_name()} to table !\n")
             await message.channel.send(f"Added {player2.get_name()} to table !")
 
-            ### TABLE.START
+            # ### TABLE.START
             while(game):
-                print(game)
+                # Bet
                 def check(message):
                     try:
                         bet = int(message.content)
@@ -55,16 +53,7 @@ class MyClient(Client):
                 table.bet(player2.get_name(), int(bet_message.content))
                 await message.channel.send(f"{player2.get_name()} has bet {table.players[player2.get_name()]["bet"]}")
                 
-                # while(table.players[player2.get_name()]["bet"] == 0) :
-                #     try:
-                #         bet = int(input(f"{player2.get_name()} c'est votre tour de miser !"))
-                #     except:
-                #         continue
-                #     else:
-                #         table.bet(player2.get_name(), bet)
-                # print(f"{player2.get_name()} has bet {table.players[player2.get_name()]["bet"]}\n")
-                # await message.channel.send(f"{player2.get_name()} has bet {table.players[player2.get_name()]["bet"]}\n")
-
+                # Prepare hands
                 table.hit(player1.get_name())
                 print(f"{player1.get_name()} draws : {table.players[player1.get_name()]["hand"][0].to_print()}")
                 await message.channel.send(f"{player1.get_name()} draws : {table.players[player1.get_name()]["hand"][0].to_print()}")
@@ -84,6 +73,7 @@ class MyClient(Client):
                 await message.channel.send(f"{player2.get_name()} draws : {table.players[player2.get_name()]["hand"][0].to_print()}")
                 print("\n")
 
+                # Players turn
                 await table.play(player1.get_name(), message.channel)
                 await table.play(player2.get_name(), message.channel)
 
@@ -109,30 +99,36 @@ class MyClient(Client):
 
                 await message.channel.send(f"**{player2.get_name()}** : {table.check_win(player2)}, wallet : {player2.get_wallet()}")
 
-                # Prepare new turn
-                cards_drawn = []
-                for i in table.players[player1.get_name()]["hand"]:
-                    cards_drawn.append(table.players[player1.get_name()]["hand"].pop())
+                # Empty players hand
+                # cards_drawn = []
+                # for i in table.players[player1.get_name()]["hand"]:
+                #     cards_drawn.append(table.players[player1.get_name()]["hand"].pop())
+                # for i in table.players[player2.get_name()]["hand"]:
+                #     cards_drawn.append(table.players[player2.get_name()]["hand"].pop())
+                table.players[player1.get_name()]["hand"] = []
+                table.players[player2.get_name()]["hand"] = []
 
-                for i in table.players[player2.get_name()]["hand"]:
-                    cards_drawn.append(table.players[player2.get_name()]["hand"].pop())
-
-                # for i in cards_drawn:
-                #     table.deck.append(cards_drawn.pop())
+                # Prepare deck
                 table.deck.build()
                 table.deck.shuffle()
 
+            # Check end turn
                 await message.channel.send("Fin du tour, continue ? Y/N")
                 def check_continue(message):
                     match message.content.capitalize():
                         case "Y" :
                             return True
                         case "N" :
-                            game = False
                             return True
                         case _ :
                             return False
-                await self.wait_for('message', check=check_continue)
+                response = await self.wait_for('message', check=check_continue)
+                match response.content.capitalize():
+                    case "Y" :
+                        game = True
+                    case "N" :
+                        game = False
+            await message.channel.send(f"Partie terminée ! Résultats : \n- {player1.get_name()} : portefeuille {player1.get_wallet()} \n- {player2.get_name()} : portefeuille {player2.get_wallet()}")
 intents = Intents.default()
 intents.message_content = True
 
