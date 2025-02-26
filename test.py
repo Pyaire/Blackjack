@@ -67,10 +67,10 @@ class MyClient(Client):
 
                 table.hit(player1.get_name())
                 print(f"{player1.get_name()} draws : {table.players[player1.get_name()]["hand"][0].to_print()}")
-                await message.channel.send(f"{player1.get_name()} draws : {table.players[player1.get_name()]["hand"][0].to_print()}")
+                await message.channel.send(f"{player1.get_name()} draws : {table.players[player1.get_name()]["hand"][1].to_print()}")
                 table.hit(player2.get_name())
                 print(f"{player2.get_name()} draws : {table.players[player2.get_name()]["hand"][0].to_print()}")
-                await message.channel.send(f"{player2.get_name()} draws : {table.players[player2.get_name()]["hand"][0].to_print()}")
+                await message.channel.send(f"{player2.get_name()} draws : {table.players[player2.get_name()]["hand"][1].to_print()}")
                 print("\n")
 
                 # Players turn
