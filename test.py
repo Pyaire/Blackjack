@@ -107,6 +107,7 @@ class MyClient(Client):
                 #     cards_drawn.append(table.players[player2.get_name()]["hand"].pop())
                 table.players[player1.get_name()]["hand"] = []
                 table.players[player2.get_name()]["hand"] = []
+                table.players["dealer"]["hand"] = []
 
                 # Prepare deck
                 table.deck.build()
