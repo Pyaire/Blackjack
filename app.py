@@ -35,21 +35,7 @@ async def on_message(message):
         if profil_player is None:
             await message.channel.send("You don't have a profile yet")
         else:
-            profile = profil_player.to_dict()
-            if profile["games_played"] == 0:
-                pourcentage = "Na %"
-            else:
-                pourcentage = f"{profile['games_won'] / profile['games_played'] * 100} %"
-            await message.channel.send(
-                f"""
-                        Name: {profile['name']}
-            Wallet: {profile['wallet']} €
-            Games played: {profile['games_played']}
-            Games won: {profile['games_won']}
-            Pourcentage of win: {pourcentage}
-            Number of bankrupt: {profile['nb_bankrupt']}
-            """
-            )
+            await message.channel.send(embed=profil_player.display_player())
 
     elif message.content.startswith("$create profile"):
         author = str(message.author.name)

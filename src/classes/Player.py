@@ -1,3 +1,5 @@
+import discord
+
 class Player:
     """
     Player is a class that represents a player in the game
@@ -131,3 +133,29 @@ class Player:
             "games_won": self.games_won,
             "nb_bankrupt": self.nb_bankrupt,
         }
+
+    def display_player(self) -> discord.Embed:
+        """
+        display_player is a method that displays the player's information as a card
+
+        Returns
+        -------
+        discord.Embed
+            An embed containing the player's information
+        """
+        if self.games_played == 0:
+            winrate = "N/A"
+        else:
+            winrate = f"{(self.games_won / self.games_played * 100):.2f}%"
+
+        embed = discord.Embed(
+            title=f"🎰 Profile of {self.name}",
+            color=discord.Color.gold()
+        )
+        embed.add_field(name="💰 Wallet", value=f"{self.wallet} €", inline=False)
+        embed.add_field(name="🎮 Games Played", value=str(self.games_played), inline=True)
+        embed.add_field(name="🏆 Games Won", value=str(self.games_won), inline=True)
+        embed.add_field(name="📈 Win Rate", value=winrate, inline=True)
+        embed.add_field(name="📉 Bankruptcies", value=str(self.nb_bankrupt), inline=False)
+        
+        return embed
