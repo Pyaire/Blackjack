@@ -76,7 +76,8 @@ async def on_message(message):
         author = str(message.author)
         profil_player = BDD.find_by_name(author)
         if profil_player is None:
-            await message.channel.send("You don't have a profile yet")
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil and the table has been created")
         if TABLE is not None:
             await message.channel.send("You already have a table")
         else:
@@ -87,9 +88,11 @@ async def on_message(message):
         author = str(message.author)
         profil_player = BDD.find_by_name(author)
         if profil_player is None:
-            await message.channel.send("You don't have a profile yet")
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil has been created")
         if TABLE is None:
-            await message.channel.send("You don't have a table yet")
+            TABLE = Table(profil_player, client)
+            await message.channel.send("You created and joined the table")
         else:
             TABLE.add_player(profil_player)
             await message.channel.send("You joined the table")
@@ -98,7 +101,8 @@ async def on_message(message):
         author = str(message.author)
         profil_player = BDD.find_by_name(author)
         if profil_player is None:
-            await message.channel.send("You don't have a profile yet")
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil has been created, join a table to bet something")
         if TABLE is None:
             await message.channel.send("You don't have a table yet")
         if TABLE.get_player(profil_player) is None:
@@ -111,7 +115,8 @@ async def on_message(message):
         author = str(message.author)
         profil_player = BDD.find_by_name(author)
         if profil_player is None:
-            await message.channel.send("You don't have a profile yet")
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil has been created, join a table to bet something")
         if TABLE is None:
             await message.channel.send("You don't have a table yet")
         if TABLE.get_player(profil_player) is None:
@@ -137,7 +142,8 @@ async def on_message(message):
         author = str(message.author)
         profil_player = BDD.find_by_name(author)
         if profil_player is None:
-            await message.channel.send("You don't have a profile yet")
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil has been created, join a table to bet something")
         if TABLE is None:
             await message.channel.send("You don't have a table yet")
         if TABLE.get_player(profil_player) is None:
