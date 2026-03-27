@@ -1,7 +1,8 @@
 import os
 import discord
-import src.controler as controler
 from src.classes.DAO import DAO
+from src.classes.Table import Table
+from src.classes.Player import Player
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,34 +27,43 @@ async def on_message(message):
         return
 
     elif message.content.startswith("$hello"):
-        controler.send_hello(message=message)
+        await message.channel.send(" Hello !")
 
     elif message.content.startswith("$profile"):
-        controler.see_profil(message=message, DAO=BDD)
+        author = str(message.author)
+        profil_player: Player = BDD.find_by_name(author)
+        if profil_player is None:
+            await message.channel.send("You don't have a profile yet")
+        else:
+            await message.channel.send(embed=profil_player.display_player())
 
     elif message.content.startswith("$create profile"):
-        controler.create_profil(message=message, DAO=BDD)
+        author = str(message.author.name)
+        profil_player = BDD.find_by_name(author)
+        if profil_player is not None:
+            await message.channel.send("You already have a profile")
+        else:
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Profile created, good luck !")
 
     elif message.content.startswith("$delete profile"):
-        controler.delete_profil(message=message, DAO=BDD)
+        author = str(message.author.name)
+        profil_player = BDD.find_by_name(author)
+        if profil_player is None:
+            await message.channel.send("You don't have a profile yet")
+        else:
+            BDD.delete(profil_player)
+            await message.channel.send("Profile deleted")
 
     elif message.content.startswith("$refund") and str(message.author) == "aynost":
-        controler.refund(message=message, DAO=BDD)
-
-    elif message.content.startswith("$create table"):
-        controler.create_table(message=message, DAO=BDD)
-
-    elif message.content.startswith("$join table"):
-        controler.join_table(message=message, DAO=BDD)
-
-    elif message.content.startswith("$leave table"):
-        controler.leave_table(message=message, DAO=BDD)
-
-    elif message.content.startswith("$bet"):
-        controler.make_bet(message=message, DAO=BDD)
-
-    elif message.content.startswith("$see bet"):
-        controler.see_bet(message=message, DAO=BDD)
+        player = str(message.mentions[0])
+        profil_player = BDD.find_by_name(player)
+        if profil_player is None:
+            await message.channel.send(f"{player} don't have a profile yet")
+        else:
+            profil_player.set_wallet(int(message.content.split(" ")[2]))
+            BDD.update(profil_player)
+            await message.channel.send("Refound done !")
 
     elif message.content.startswith("$close") or message.content.startswith("$cls") and str(message.author) == "aynost":
         global TABLE
@@ -61,6 +71,86 @@ async def on_message(message):
         BDD.close()
         await message.channel.send("Bye ! ^^")
         await client.close()
+
+    elif message.content.startswith("$create table"):
+        author = str(message.author)
+        profil_player = BDD.find_by_name(author)
+        if profil_player is None:
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil and the table has been created")
+        if TABLE is not None:
+            await message.channel.send("You already have a table")
+        else:
+            TABLE = Table(profil_player, client)
+            await message.channel.send("Table created, let's play !")
+
+    elif message.content.startswith("$join table"):
+        author = str(message.author)
+        profil_player = BDD.find_by_name(author)
+        if profil_player is None:
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil has been created")
+        if TABLE is None:
+            TABLE = Table(profil_player, client)
+            await message.channel.send("You created and joined the table")
+        else:
+            TABLE.add_player(profil_player)
+            await message.channel.send("You joined the table")
+
+    elif message.content.startswith("$leave table"):
+        author = str(message.author)
+        profil_player = BDD.find_by_name(author)
+        if profil_player is None:
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil has been created, join a table to bet something")
+        if TABLE is None:
+            await message.channel.send("You don't have a table yet")
+        if TABLE.get_player(profil_player) is None:
+            await message.channel.send("You are not in the table")
+        else:
+            TABLE.remove_player(profil_player)
+            await message.channel.send("You left the table")
+
+    elif message.content.startswith("$bet"):
+        author = str(message.author)
+        profil_player = BDD.find_by_name(author)
+        if profil_player is None:
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil has been created, join a table to bet something")
+        if TABLE is None:
+            await message.channel.send("You don't have a table yet")
+        if TABLE.get_player(profil_player) is None:
+            await message.channel.send("You are not in the table")
+        else:
+            if message.content.split(" ")[1].isnumeric() is False:
+                await message.channel.send("You can't bet a string")
+            elif int(message.content.split(" ")[1]) % 1 != 0:
+                await message.channel.send("You can't bet a float")
+            elif int(message.content.split(" ")[1]) > int(profil_player.wallet):
+                await message.channel.send("You don't have enough money")
+            elif int(message.content.split(" ")[1]) < 0:
+                await message.channel.send("You can't bet a negative amount")
+            elif int(message.content.split(" ")[1]) == 0:
+                await message.channel.send("You can't bet 0")
+            elif int(message.content.split(" ")[1]) % 5 != 0:
+                await message.channel.send("You can't bet an amount that is not a multiple of 5")
+            else:
+                TABLE.bet(profil_player, int(message.content.split(" ")[1]))
+                await message.channel.send("Bet done !")
+
+    elif message.content.startswith("$see bet"):
+        author = str(message.author)
+        profil_player = BDD.find_by_name(author)
+        if profil_player is None:
+            BDD.insert(Player(author, 50, 0, 0, 0))
+            await message.channel.send("Your profil has been created, join a table to bet something")
+        if TABLE is None:
+            await message.channel.send("You don't have a table yet")
+        if TABLE.get_player(profil_player) is None:
+            await message.channel.send("You are not in the table")
+        else:
+            await message.channel.send(f"Your bet: {TABLE.get_player(profil_player)['bet']} €")
+
     # elif message.content.startswith('$start'):
     #     author = str(message.author)
     #     profil_player = BDD.find_by_name(author)
